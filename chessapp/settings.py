@@ -33,12 +33,15 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',    
+    'chess',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'chessapp.wsgi.application'
+ASGI_APPLICATION = 'chessapp.asgi.application'
 
 
 # Database
