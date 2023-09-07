@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from chess.views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('chess.urls')),
+    path('', index, name ="index"),
+    path('chess/', include('chess.urls')),
 ]
