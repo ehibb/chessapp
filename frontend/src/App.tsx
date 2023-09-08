@@ -1,25 +1,26 @@
-import { ChangeEvent, FC, useState, useEffect } from 'react';
+import { ChangeEvent, FC, useState, useEffect } from 'react'; 
 import axios from "axios"
 import Header from "./Components/Header";
+import ChessRoomLink from "./Components/ChessRoomLink";
 import ChessRoom from "./Components/ChessRoom";
 import { IRoom } from './Interfaces';
 
 const App:FC = () => {
 
   const [room, setRoom] = useState<string>("");
+  const [roomToJoin, setRoomToJoin] = useState<string>("")
   const [rooms, setRooms] = useState<IRoom[]>([]);
+  const [inRoom, setInRoom] = useState<boolean>(false);
   
   useEffect(() => { getRooms() }, [])
-
+  
   const handleJoin = (roomToJoin:string) => {
+    setRoomToJoin(roomToJoin);
+    setInRoom(true);
+  }
 
-    const webSocket = new WebSocket(
-      'ws://'
-      + window.location.host
-      + '/ws/chat/'
-      + roomToJoin 
-      + '/'
-    );
+  const leaveRoom = () => {
+    setInRoom(false);
   }
 
   const handleChange = (event:ChangeEvent<HTMLInputElement>):void => {
@@ -62,11 +63,15 @@ const App:FC = () => {
         <input type="text" name='roomName' value={room} onChange={handleChange} />
         <button onClick={createRoom}>Create room</button>
       </div>
-      <div className='chessRooms'>
-        {rooms.map((room:IRoom, key:number) => {
-          return <ChessRoom key={key} room={room} handleJoin={handleJoin} />
-        })}
-      </div>
+      {!inRoom ? (
+        <div className='chessRooms'>
+          {rooms.map((room:IRoom, key:number) => {
+            return <ChessRoomLink key={key} room={room} handleJoin={handleJoin} />
+          })}
+        </div>
+      ) : (
+        <ChessRoom roomName={roomToJoin} leaveRoom={leaveRoom}/>
+      )}
 
     </div>
   );

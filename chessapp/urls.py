@@ -21,5 +21,5 @@ from chess.views import index
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index, name ="index"),
-    path('chess/', include('chess.urls')),
+    path('', include('chess.urls')),
 ]
