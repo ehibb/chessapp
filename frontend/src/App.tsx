@@ -49,7 +49,7 @@ const App:FC = () => {
         name: room,
       }
     }).then(() => {
-      getRooms()
+     handleJoin(room); 
     })
     setRoom(""); 
   };
