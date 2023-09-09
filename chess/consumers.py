@@ -2,28 +2,46 @@ import json
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-
+from .models import Room
 class ChessConsumer(WebsocketConsumer):
+
+
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_name = self.room_name.replace(' ', '-')
         self.room_group_name = 'chat_%s' % self.room_name
-        
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
-        )
+        self.room = Room.objects.get(name=self.room_name)
+        print(self.room.connected_users)
+        self.room.connected_users += 1
+        self.room.save(update_fields=['connected_users'])
+        if (self.room.connected_users > 2):
+            return self.close()
+        else:
 
-        self.accept()
+            print(self.room.connected_users)
+            async_to_sync(self.channel_layer.group_add)(
+                self.room_group_name, self.channel_name
+            )
 
-    
+            self.accept()
+
+
+
+
     def disconnect(self, code):
+
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name, self.channel_name
         )
+        self.room.connected_users -= 1
+        self.room.save(update_fields=['connected_users'])
+
+        print(self.room.connected_users)
+
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
-        
+
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {"type": "chat_message", "message": message}
         )

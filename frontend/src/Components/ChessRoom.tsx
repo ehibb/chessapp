@@ -45,6 +45,7 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 	 
 
 	const onDrop = (sourceSquare:string, targetSquare: string) => {
+		
 		const gameCopy = new Chess();
 		gameCopy.loadPgn(game.pgn());
 		const move = gameCopy.move({
