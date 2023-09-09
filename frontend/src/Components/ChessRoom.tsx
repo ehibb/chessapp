@@ -1,5 +1,6 @@
 import React, { ChangeEvent, useCallback, useState } from "react";
 import useWebSocket, { ReadyState }  from "react-use-websocket";
+import { Chessboard } from "react-chessboard"
 
 interface Props{
 	roomName:string,
@@ -54,6 +55,7 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 			<input type="text" name="chatMessage" value={message} onChange={changeMessage} />
 			<p>Last message: {lastMessage}</p>
 			<button onClick={handleSendMessage}>Send message</button>	
+			<Chessboard  />
 			<button onClick={() => {leaveRoom();}}>Leave</button>
 
 		</div>

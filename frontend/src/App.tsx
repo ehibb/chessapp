@@ -21,6 +21,7 @@ const App:FC = () => {
 
   const leaveRoom = () => {
     setInRoom(false);
+    getRooms();
   }
 
   const handleChange = (event:ChangeEvent<HTMLInputElement>):void => {
@@ -58,16 +59,19 @@ const App:FC = () => {
     <div className='App'>
       
       <Header />
-      <div className='createRoom'>
-        <h1> Create room </h1>
-        <input type="text" name='roomName' value={room} onChange={handleChange} />
-        <button onClick={createRoom}>Create room</button>
-      </div>
       {!inRoom ? (
-        <div className='chessRooms'>
-          {rooms.map((room:IRoom, key:number) => {
-            return <ChessRoomLink key={key} room={room} handleJoin={handleJoin} />
-          })}
+        <div className='notInRoom'>
+          <div className='createRoom'>
+            <h1> Create room </h1>
+            <input type="text" name='roomName' value={room} onChange={handleChange} />
+            <button onClick={createRoom}>Create room</button>
+          </div>
+
+          <div className='chessRooms'>
+            {rooms.map((room:IRoom, key:number) => {
+              return <ChessRoomLink key={key} room={room} handleJoin={handleJoin} />
+            })}
+          </div>
         </div>
       ) : (
         <ChessRoom roomName={roomToJoin} leaveRoom={leaveRoom}/>
