@@ -4,10 +4,10 @@ from django.template.defaultfilters import slugify
 
 class Room(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    name_slug = models.SlugField(unique=True)
     connected_users = models.PositiveSmallIntegerField(default=0)
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
+        self.name_slug = slugify(self.name)
         super(Room, self).save(*args, **kwargs)
 
     class Meta:

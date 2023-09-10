@@ -2,6 +2,7 @@ import React, { ChangeEvent, useState } from "react";
 import useWebSocket, { ReadyState }  from "react-use-websocket";
 import { Chess } from "chess.js"
 import { Chessboard } from "react-chessboard"
+import axios from "axios";
 
 interface Props{
 	roomName:string,
@@ -16,8 +17,8 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 	const [turn, setTurn] = useState<boolean>(false);
 	const {sendJsonMessage, readyState} = useWebSocket('ws://'
 		+ window.location.host
-		+ '/ws/chat/'
-		+ roomName 
+		+ '/ws/chess/'
+		+ roomName.replace(' ', '-') 
 		+ '/', {
 			onOpen: () => { 
 				console.log("Connected");
@@ -27,38 +28,20 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 			},
 			onMessage: (e) => {
 				const data = JSON.parse(e.data);
-				console.log(data.message);
-				setLastMessage(data.message);
+				console.log(data)	
+				if (data.type === "chat_message"){
+					console.log(data.message);
+					setLastMessage(data.message);
+				} else if (data.type == "chess_move"){
+					if (!turn){
+						makeChessMove({from: data.from, to: data.to, promotion: data.promotion});
+						setTurn(true);
+					} else {
+						setTurn(false);
+					}
+				}
 			}
 	});
-
-	const handleSendMessage = () => {
-		sendJsonMessage({"message": message});
-		setMessage("");
-	}
-
-	const changeMessage = (event:ChangeEvent<HTMLInputElement>):void => {
-		setMessage(event.target.value);
-		console.log(message);
-	}
-
-	 
-
-	const onDrop = (sourceSquare:string, targetSquare: string) => {
-		
-		const gameCopy = new Chess();
-		gameCopy.loadPgn(game.pgn());
-		const move = gameCopy.move({
-			from: sourceSquare,
-			to: targetSquare,
-			promotion: "q"
-		});
-		setGame(gameCopy);
-		console.log(move === null);
-		if (move === null) return false;
-		
-		return true;
-	}
 
 	const connectionStatus = {
 		[ReadyState.CONNECTING]: "Connecting",
@@ -67,6 +50,38 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 		[ReadyState.CLOSED]: "Closed",
 		[ReadyState.UNINSTANTIATED]: "Uninstantiated",
 		}[readyState];
+
+	const handleSendMessage = () => {
+		sendJsonMessage({"type":"chat_message", "message": message});
+		setMessage("");
+	}
+
+	const changeMessage = (event:ChangeEvent<HTMLInputElement>):void => {
+		setMessage(event.target.value);
+		console.log(message);
+	}
+
+	const sendChessMove = (currentMove:{from:string, to:string, promotion:string}) => {
+		sendJsonMessage({"type": "chess_move", "move": currentMove});	
+	}
+
+	const makeChessMove = (currentMove:{from:string, to:string, promotion:string}) => {
+		const gameCopy = new Chess();
+		gameCopy.loadPgn(game.pgn());
+		const move = gameCopy.move(currentMove);
+		setGame(gameCopy);
+		return move;
+	}
+
+	const onDrop = (sourceSquare:string, targetSquare: string) => {
+		if (!turn) return false;
+		const moveToMake = {from: sourceSquare, to: targetSquare, promotion: "q"};
+		const move = makeChessMove(moveToMake);
+		if (move === null) return false;
+		sendChessMove(moveToMake);
+		return true;
+	}
+
 
 
 	return (

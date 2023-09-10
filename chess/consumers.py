@@ -7,10 +7,10 @@ class ChessConsumer(WebsocketConsumer):
 
 
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_name = self.scope['url_route']['kwargs']['slug']
         self.room_name = self.room_name.replace(' ', '-')
         self.room_group_name = 'chat_%s' % self.room_name
-        self.room = Room.objects.get(name=self.room_name)
+        self.room = Room.objects.get(name_slug=self.room_name)
         print(self.room.connected_users)
         self.room.connected_users += 1
         self.room.save(update_fields=['connected_users'])
@@ -40,10 +40,17 @@ class ChessConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
-
+        text_data_type = text_data_json["type"]
+        message_to_send = {"type": text_data_type}
+        if (text_data_type == "chat_message"):
+            message_to_send["message"] = text_data_json["message"]
+        elif (text_data_type == "chess_move"):
+            message_to_send["from"] = text_data_json["from"]
+            message_to_send["to"] = text_data_json["to"]
+            message_to_send["promotion"] = text_data_json["promotion"]
+        print(message_to_send)
         async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "chat_message", "message": message}
+            self.room_group_name, message_to_send
         )
     def chat_message(self, event):
         message = event["message"]
