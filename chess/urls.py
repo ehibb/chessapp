@@ -5,5 +5,5 @@ app_name = 'chess'
 urlpatterns = [
     path('', index, name="index"),
     path('rooms/', room, name="room"),
-    path('rooms/<int:pk>/', room_detail, name="detail"),
+    path('rooms/<slug:room_slug>/', room_detail, name="detail"),
 ]

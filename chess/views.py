@@ -25,13 +25,17 @@ def room(request):
             return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['DELETE'])
-def room_detail(request, pk):
+@api_view(['GET', 'DELETE'])
+def room_detail(request, room_slug):
     try:
-        room = Room.objects.get(pk=pk)
+        room = Room.objects.get(name_slug=room_slug)
     except Room.delete:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
+    if request.method == 'GET':
+        serializer = RoomSerializer(room, many=False)
+        return Response(serializer.data)
+
     if request.method == 'DELETE':
         room.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

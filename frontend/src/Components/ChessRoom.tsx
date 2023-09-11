@@ -10,18 +10,27 @@ interface Props{
 }
 
 const ChessRoom = ({roomName, leaveRoom}:Props) => {
-	
+		
 	const [message, setMessage] = useState<string>("");
 	const [lastMessage, setLastMessage] = useState<string>("");
 	const [game, setGame] = useState<Chess>(new Chess());
 	const [turn, setTurn] = useState<boolean>(false);
+	
+	const room_slug = roomName.replaceAll(' ', '-');
 	const {sendJsonMessage, readyState} = useWebSocket('ws://'
 		+ window.location.host
 		+ '/ws/chess/'
-		+ roomName.replaceAll(' ', '-') 
+		+ room_slug 
 		+ '/', {
 			onOpen: () => { 
 				console.log("Connected");
+				axios({
+					method: "GET",
+					url: "rooms/" + room_slug,
+					}).then((response) => {
+						const data = response.data;
+						setTurn((data.connected_users % 2) !== 0)
+					})
 			},
 			onClose: () => { 
 				console.log("Disconnected");

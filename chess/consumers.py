@@ -40,15 +40,16 @@ class ChessConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
+        print(text_data_json)
         text_data_type = text_data_json["type"]
         message_to_send = {"type": text_data_type}
         if (text_data_type == "chat_message"):
             message_to_send["message"] = text_data_json["message"]
         elif (text_data_type == "chess_move"):
-            message_to_send["from"] = text_data_json["from"]
-            message_to_send["to"] = text_data_json["to"]
-            message_to_send["promotion"] = text_data_json["promotion"]
-        print(message_to_send)
+            move = text_data_json["move"]
+            message_to_send["from"] = move["from"]
+            message_to_send["to"] = move["to"]
+            message_to_send["promotion"] = move["promotion"]
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, message_to_send
         )
