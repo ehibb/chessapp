@@ -18,7 +18,7 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 	const {sendJsonMessage, readyState} = useWebSocket('ws://'
 		+ window.location.host
 		+ '/ws/chess/'
-		+ roomName.replace(' ', '-') 
+		+ roomName.replaceAll(' ', '-') 
 		+ '/', {
 			onOpen: () => { 
 				console.log("Connected");

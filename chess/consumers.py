@@ -53,9 +53,12 @@ class ChessConsumer(WebsocketConsumer):
             self.room_group_name, message_to_send
         )
     def chat_message(self, event):
-        message = event["message"]
+        self.send(text_data=json.dumps({"type": event["type"], "message": event["message"]}))
 
-        self.send(text_data=json.dumps({"message": message}))
+    def chess_move(self, event):
+        self.send(text_data=json.dumps({"type": event["type"], "from": event["from"], "to": event["to"], "promotion": event["promotion"]}))
+
+
 
 
 

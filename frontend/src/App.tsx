@@ -43,14 +43,16 @@ const App:FC = () => {
   }
   
   const createRoom = () => {
+    const room_slug:string = room.replace(/[^a-zA-Z0-9 ]/g, "");
+    console.log(room_slug);
     axios({
       method: "POST",
       url: "rooms/",
       data:{
-        name: room,
+        name: room_slug, 
       }
     }).then(() => {
-     handleJoin(room); 
+     handleJoin(room_slug); 
     })
     setRoom(""); 
   };
