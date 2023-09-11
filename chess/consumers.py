@@ -25,6 +25,11 @@ class ChessConsumer(WebsocketConsumer):
 
             self.accept()
 
+        if (self.room.connected_users == 2):
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name, {"type": "game_start"}
+            )
+
 
 
 
@@ -58,7 +63,9 @@ class ChessConsumer(WebsocketConsumer):
 
     def chess_move(self, event):
         self.send(text_data=json.dumps({"type": event["type"], "from": event["from"], "to": event["to"], "promotion": event["promotion"]}))
-
+    
+    def game_start(self, event):
+        self.send(text_data=json.dumps({"type": event["type"]}))
 
 
 

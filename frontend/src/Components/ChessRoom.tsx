@@ -84,7 +84,7 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 	}
 
 	const onDrop = (sourceSquare:string, targetSquare: string) => {
-		if (!turn) return false;
+		if (!turn || !gameStart) return false;
 		const moveToMake = {from: sourceSquare, to: targetSquare, promotion: "q"};
 		const move = makeChessMove(moveToMake);
 		if (move === null) return false;
