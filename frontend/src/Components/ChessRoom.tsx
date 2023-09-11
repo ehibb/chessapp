@@ -15,7 +15,8 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 	const [lastMessage, setLastMessage] = useState<string>("");
 	const [game, setGame] = useState<Chess>(new Chess());
 	const [turn, setTurn] = useState<boolean>(false);
-	
+	const [gameStart, setGameStart] = useState<boolean>(false);
+
 	const room_slug = roomName.replaceAll(' ', '-');
 	const {sendJsonMessage, readyState} = useWebSocket('ws://'
 		+ window.location.host
@@ -37,9 +38,7 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 			},
 			onMessage: (e) => {
 				const data = JSON.parse(e.data);
-				console.log(data)	
 				if (data.type === "chat_message"){
-					console.log(data.message);
 					setLastMessage(data.message);
 				} else if (data.type == "chess_move"){
 					if (!turn){
@@ -48,6 +47,8 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 					} else {
 						setTurn(false);
 					}
+				} else if (data.type == "game_start"){
+					setGameStart(true);
 				}
 			}
 	});
@@ -100,11 +101,24 @@ const ChessRoom = ({roomName, leaveRoom}:Props) => {
 			<input type="text" name="chatMessage" value={message} onChange={changeMessage} />
 			<p>Last message: {lastMessage}</p>
 			<button onClick={handleSendMessage}>Send message</button>
-			{ turn ? (
-				<p>It is your turn</p>
-			) : (
-				<p>Opponent's turn</p>
-			)}
+			{ gameStart 
+				? (	
+				<>
+				{ turn 
+					? (
+						<p>It is your turn</p>
+					) : (
+					<p>Opponent's turn</p>
+				)
+				}
+				</> 
+				) 
+				: (
+					<p>Game has not started.</p>
+				)}
+
+
+
 
 			<Chessboard position={game.fen()} onPieceDrop={onDrop} />
 			<button onClick={() => {leaveRoom();}}>Leave</button>
