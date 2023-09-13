@@ -7,42 +7,48 @@ class ChessConsumer(WebsocketConsumer):
 
 
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['slug']
-        self.room_name = self.room_name.replace(' ', '-')
+        self.room_name = self.scope['url_route']['kwargs']['slug'].replace(' ', '-')
         self.room_group_name = 'chat_%s' % self.room_name
-        self.room = Room.objects.get(name_slug=self.room_name)
-        print(self.room.connected_users)
-        self.room.connected_users += 1
-        self.room.save(update_fields=['connected_users'])
-        if (self.room.connected_users > 2):
+        try:
+            self.room = Room.objects.get(name_slug=self.room_name)
+        except Room.DoesNotExist:
             return self.close()
         else:
-
             print(self.room.connected_users)
-            async_to_sync(self.channel_layer.group_add)(
-                self.room_group_name, self.channel_name
-            )
+            self.room.connected_users += 1
+            self.room.save(update_fields=['connected_users'])
+            if (self.room.connected_users > 2):
+                return self.close()
+            else:
 
-            self.accept()
+                print(self.room.connected_users)
+                async_to_sync(self.channel_layer.group_add)(
+                    self.room_group_name, self.channel_name
+                )
 
-        if (self.room.connected_users == 2):
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name, {"type": "game_start"}
-            )
+                self.accept()
+
+            if (self.room.connected_users == 2):
+                async_to_sync(self.channel_layer.group_send)(
+                    self.room_group_name, {"type": "game_start"}
+                )
 
 
 
 
     def disconnect(self, code):
+        try:
+            async_to_sync(self.channel_layer.group_discard)(
+                self.room_group_name, self.channel_name
+            )
+            self.room = Room.objects.get(name_slug = self.room_name)
+            self.room.connected_users -= 1
+            self.room.save(update_fields=['connected_users'])
 
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name, self.channel_name
-        )
-        self.room.connected_users -= 1
-        self.room.save(update_fields=['connected_users'])
-
-        print(self.room.connected_users)
-
+            if (self.room.connected_users == 0):
+                self.room.delete()
+        except Room.DoesNotExist:
+            pass
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         print(text_data_json)
