@@ -69,6 +69,10 @@ const App:FC = () => {
             <button onClick={createRoom}>Create room</button>
           </div>
 
+          <div className = 'reloadRooms'>
+            <button onClick={getRooms}> Reload rooms</button>
+          </div>
+
           <div className='chessRooms'>
             {rooms.map((room:IRoom, key:number) => {
               return <ChessRoomLink key={key} room={room} handleJoin={handleJoin} />
